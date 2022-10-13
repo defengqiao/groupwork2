@@ -9,8 +9,8 @@ rm(list = ls())
 #arguments: n        2*n is the number of prisoners;
 #           k        is the ID of the prisoner;
 #return:    whether he finds his card,times he tries
-fcard1 = function(n, k) {
-  ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
+fcard1 = function(n, k,ncard) {
+  #ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
   i = k                         #starts at the box with their number on it
   times = 1
   while (k != ncard[i]) {   #he can find his card at the end of the loop
@@ -20,8 +20,8 @@ fcard1 = function(n, k) {
   return(times)             #times he try = length of the loop
 }
 
-fcard2 = function(n, k) {
-  ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
+fcard2 = function(n, k,ncard) {
+  #ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
   startr = sample(1:(2 * n), 1)         #starting from a randomly selected box
   i = startr
   times = 1
@@ -35,11 +35,25 @@ fcard2 = function(n, k) {
   return(times)
 }
 
-fcard3 = function(n, k) {
-  rand = sample(1:(2 * n), 2 * n)   # open n boxes at random, rand[i] means the card number in ith time
+fcard3 = function(n, k,rand) {
+  #rand = sample(1:(2 * n), 2 * n)   # open n boxes at random, rand[i] means the card number in ith time
   times = match(k, rand)
   return(times)
 }
+
+fcard= function(n, k, strategy, ncard) {
+  #decide which strategy should be used  
+  if (strategy == 1) {
+    fcard = fcard1(n, k, ncard)
+  } else if (strategy == 2) {
+    fcard = fcard2(n, k, ncard)
+  } else{
+    fcard = fcard3(n, k, ncard)
+  }
+  #win=(fcard(n, k, ncard) <= m) #win=1 if he can find his number within n times
+  return(fcard)
+}
+
 #function Pone estimates the probability of a single prisoner succeeding in finding their number
 #arguments: n        2*n is the number of prisoners;
 #           k        is the ID of the prisoner;
@@ -47,21 +61,34 @@ fcard3 = function(n, k) {
 #           nreps    is the number of replicate simulations;
 #return:    probability estimate
 Pone = function(n, k, strategy, nreps = 10000) {
-  #decide which strategy should be used  
-  if (strategy == 1) {
-    fcard = fcard1
-  } else if (strategy == 2) {
-    fcard = fcard2
-  } else{
-    fcard = fcard3
-  }
   wint = 0   #times of success
   for (i in 1:nreps) {
-    if (fcard(n, k) <= n) {  #if he can find his number within n times
-      wint = wint + 1
-    }
+    ncard = sample(1:(2 * n), 2 * n)
+    # if (Pones(n, k, strategy, ncard) <= n) {  #if he can find his number within n times
+    #   wint = wint + 1
+    # }
+    wint = wint + (fcard(n, k, strategy, ncard)<=n)
   }
   P = wint / nreps
   return(P)
 }
-print(Pone(50, 1, 2))
+
+Pall = function(n, strategy, nerps = 10000) {
+  winn = 0
+  for (j in 1:nerps) {
+    ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
+    win = 1:(2*n)
+    
+    
+    for (i in 1:(2 * n)) {
+      win = win + (fcard(n, i, strategy, ncard) <= n)
+      
+    }
+    winn = winn + (win == (2 * n))
+  }
+  p = winn / nerps
+  return(p)
+}
+
+print(Pall(50, 1))
+print(Pone(50, 1, 1))
