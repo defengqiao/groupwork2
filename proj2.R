@@ -85,10 +85,10 @@ Pall = function(n, strategy, nerps = 10000,m=n) {
   return(p)
 }
 
-#n=10
-# p2n=apply(array(1:(2 * n),c(2*n)),1,Pall,n=n,strategy=3,nerps=10000)
+n=10
+p2n=apply(array(1:(2 * n),c(2*n)),1,Pall,n=n,strategy=1,nerps=10000)
 # #p2n[2:(2*n)]=p2n[2:(2*n)]-p2n[1:(2*n-1)]
-# barplot(p2n)
+barplot(p2n)
 # #print(Pall(50, 1))
 
 
