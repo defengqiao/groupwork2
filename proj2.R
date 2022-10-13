@@ -35,9 +35,10 @@ fcard2 = function(n, k,ncard) {
   return(times)
 }
 
-fcard3 = function(n, k,rand) {
-  #rand = sample(1:(2 * n), 2 * n)   # open n boxes at random, rand[i] means the card number in ith time
-  times = match(k, rand)
+fcard3 = function(n, k,ncard) {
+  rand = sample(1:(2 * n), 2 * n) #the order of opening boxes
+  i = match(k, ncard)             #the card is in the box i
+  times=match(i,rand)             #times he try
   return(times)
 }
 
@@ -50,7 +51,6 @@ fcard= function(n, k, strategy, ncard) {
   } else{
     fcard = fcard3(n, k, ncard)
   }
-  #win=(fcard(n, k, ncard) <= m) #win=1 if he can find his number within n times
   return(fcard)
 }
 
@@ -60,35 +60,35 @@ fcard= function(n, k, strategy, ncard) {
 #           strategy shows the chosen strategy(1,2 or 3);
 #           nreps    is the number of replicate simulations;
 #return:    probability estimate
-Pone = function(n, k, strategy, nreps = 10000) {
+Pone = function(n, k, strategy, nreps = 10000,m=n) {
   wint = 0   #times of success
   for (i in 1:nreps) {
     ncard = sample(1:(2 * n), 2 * n)
-    # if (Pones(n, k, strategy, ncard) <= n) {  #if he can find his number within n times
-    #   wint = wint + 1
-    # }
-    wint = wint + (fcard(n, k, strategy, ncard)<=n)
+    wint = wint + (fcard(n, k, strategy, ncard)<=m)
   }
   P = wint / nreps
   return(P)
 }
 
-Pall = function(n, strategy, nerps = 10000) {
-  winn = 0
+#m means prisoner can try m times (for probability distribution)
+Pall = function(n, strategy, nerps = 10000,m=n) {
+  sn=0
   for (j in 1:nerps) {
     ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
-    win = 1:(2*n)
-    
-    
-    for (i in 1:(2 * n)) {
-      win = win + (fcard(n, i, strategy, ncard) <= n)
-      
-    }
-    winn = winn + (win == (2 * n))
+    pid = array(1:(2*n),c(2*n))        #prisoner id
+    winn=apply(pid,1, fcard,n=n,strategy=strategy,ncard=ncard)  #times of every prisoner try until they get card
+    winL=(winn<=m)                     #FALSE if times of prisoner i try is bigger than n
+    win=!(FALSE%in%winL)               #win=1 means they win once
+    sn=sn+win                          #number of wins
   }
-  p = winn / nerps
+  p = round(sn / nerps,7)              #probability of game
   return(p)
 }
 
-print(Pall(50, 1))
-print(Pone(50, 1, 1))
+#n=10
+# p2n=apply(array(1:(2 * n),c(2*n)),1,Pall,n=n,strategy=3,nerps=10000)
+# #p2n[2:(2*n)]=p2n[2:(2*n)]-p2n[1:(2*n-1)]
+# barplot(p2n)
+# #print(Pall(50, 1))
+
+
