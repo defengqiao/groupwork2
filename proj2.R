@@ -74,19 +74,16 @@ Pone = function(n, k, strategy, nreps = 10000) {
 }
 
 Pall = function(n, strategy, nerps = 10000) {
-  winn = 0
+  nn=0
   for (j in 1:nerps) {
     ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
-    win = 1:(2*n)
-    
-    
-    for (i in 1:(2 * n)) {
-      win = win + (fcard(n, i, strategy, ncard) <= n)
-      
-    }
-    winn = winn + (win == (2 * n))
+    pid = array(1:(2*n),c(2*n))        #prisoner id
+    winn=apply(pid,1, fcard,n=n,strategy=strategy,ncard=ncard)  #times of every prisoner try until they get card
+    winL=(winn<=n)                     #FALSE if times of prisoner i try is bigger than n
+    win=!(FALSE%in%winL)               #win=1 means they win once
+    nn=nn+win
   }
-  p = winn / nerps
+  p = nn / nerps
   return(p)
 }
 
