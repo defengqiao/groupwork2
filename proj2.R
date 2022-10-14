@@ -87,17 +87,20 @@ Pall = function(n, strategy, nerps = 10000,m=n){
 #------------------------------------------------------
 #dloop
 
-rloop = function(Ti,ncard) {#T[i,]
-  nr=sapply(Ti,function(i,ncard) ncard[i],ncard=ncard ) #next card number
-  return(nr)    #return next row
+rloop = function(T,n) {#T
+  len=nrow(T)       #the length of column in T 
+  nr=sapply(c(1:(2*n)),function(i,T) T[2:len,T[len,i]],T=T) #next card number
+  return(nr)    #return next 2^(i-1) row(s) on the ith time of the loop!
 }
 leni = function(n) {
-  ncard = sample(1:(2 * n), 2 * n)
-  T = matrix(0, 2 * n+1, 2 * n)
-  T[1, ] = c(1:(2 * n))
-  for (i in 1:((2 * n))) {
-    T[i + 1, ] = rloop(T[i, ], ncard)
+  #ncard = sample(1:(2 * n), 2 * n)
+  #T = matrix(0, 2 * n+1, 2 * n)
+  T = c(1:(2 * n))              #n boxes
+  T = rbind(T,sample(1:(2 * n), 2 * n))  #card number in boxes
+  while (nrow(T)<=(2*n)) {
+    T=rbind(T,rloop(T,n))
   }
+  
   len=apply(T,2,function(Ti) match(Ti[1],Ti[2:(2*n+1)]))  #loop length
   lenlist=rep(0,2*n)
   lenlist[len]=1            #if length i occurring once, lenlist[i]=1
@@ -105,12 +108,11 @@ leni = function(n) {
 }
 
 dloop=function(n,nerps=10000){
-  lenm=sapply(rep(n,nerps), leni)  #10000columns, each columns is a lenlist
+  c=rep(n,nerps)
+  lenm=sapply(c, leni)  #10000columns, each columns is a lenlist
   p=round(rowSums(lenm)/nerps,7)   
   return(p)
 }
 
-
-
-a=dloop(5)
+a=system.time(dloop(50))
 print(a)
