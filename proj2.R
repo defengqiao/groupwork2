@@ -71,24 +71,46 @@ Pone = function(n, k, strategy, nreps = 10000,m=n) {
 }
 
 #m means prisoner can try m times (for probability distribution)
-Pall = function(n, strategy, nerps = 10000,m=n) {
-  sn=0
-  for (j in 1:nerps) {
-    ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
-    pid = array(1:(2*n),c(2*n))        #prisoner id
-    winn=apply(pid,1, fcard,n=n,strategy=strategy,ncard=ncard)  #times of every prisoner try until they get card
-    winL=(winn<=m)                     #FALSE if times of prisoner i try is bigger than n
-    win=!(FALSE%in%winL)               #win=1 means they win once
-    sn=sn+win                          #number of wins
+gall=function(n, strategy, m=n){    #game for all
+  ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
+  pid = array(1:(2*n),c(2*n))        #prisoner id
+  winn=sapply(pid, fcard,n=n,strategy=strategy,ncard=ncard)  #times of every prisoner try until they get card
+  winL=(winn<=m)                     #FALSE if times of prisoner i try is bigger than n
+  win=all(winL)                      #win=1 means they win once
+  return(win)
+}
+Pall = function(n, strategy, nerps = 10000,m=n){
+  gresult=sapply(rep(n,nerps), gall,strategy=strategy)
+  sn=sum(gresult)               ##number of wins
+  p=round(sn / nerps,7)         #probability of game
+}
+#------------------------------------------------------
+#dloop
+
+rloop = function(Ti,ncard) {#T[i,]
+  nr=sapply(Ti,function(i,ncard) ncard[i],ncard=ncard ) #next card number
+  return(nr)    #return next row
+}
+leni = function(n) {
+  ncard = sample(1:(2 * n), 2 * n)
+  T = matrix(0, 2 * n+1, 2 * n)
+  T[1, ] = c(1:(2 * n))
+  for (i in 1:((2 * n))) {
+    T[i + 1, ] = rloop(T[i, ], ncard)
   }
-  p = round(sn / nerps,7)              #probability of game
+  len=apply(T,2,function(Ti) match(Ti[1],Ti[2:(2*n+1)]))  #loop length
+  lenlist=rep(0,2*n)
+  lenlist[len]=1            #if length i occurring once, lenlist[i]=1
+  return(lenlist)
+}
+
+dloop=function(n,nerps=10000){
+  lenm=sapply(rep(n,nerps), leni)  #10000columns, each columns is a lenlist
+  p=round(rowSums(lenm)/nerps,7)   
   return(p)
 }
 
-n=10
-p2n=apply(array(1:(2 * n),c(2*n)),1,Pall,n=n,strategy=1,nerps=10000)
-# #p2n[2:(2*n)]=p2n[2:(2*n)]-p2n[1:(2*n-1)]
-barplot(p2n)
-# #print(Pall(50, 1))
 
 
+a=dloop(5)
+print(a)
