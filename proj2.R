@@ -10,39 +10,61 @@ rm(list = ls())
 #           k        is the ID of the prisoner;
 #return:    whether he finds his card,times he tries
 
-fcard = function(n, k, strategy, ncard) {
-  #decide which strategy should be used
-  # if (strategy == 1) {
-  #   fcard = fcard1(n, k, ncard)
-  # } else if (strategy == 2) {
-  #   fcard = fcard2(n, k, ncard)
-  # } else{
-  #   fcard = fcard3(n, k)
-  # }
-  if (strategy == 1) {
-    i = k                         #starts at the box with their number on it
-    times = 1
-    while (k != ncard[i]) {
-      #he can find his card at the end of the loop
-      i = ncard[i]
-      times = times + 1
-    }
-  } else if (strategy == 2) {
-    startr = sample(1:(2 * n), 1)         #starting from a randomly selected box
-    i = startr
-    times = 1
-    #loop = 0
-    while (k != ncard[i] & times <= n) {
-      #loop = (startr == ncard[i]) #loop=1 when a loop occurs and k is not in the loop
-      i = ncard[i]
-      times = times + 1
-    }
-  } else{
-    rand = sample(1:(2 * n), n)     #card number he get first n times
-    times = (!(k %in% rand)) * (n + 1)     #if he get his card,times=0;if not,times=n+1
+s1 = function(n, k,ncard) {
+  i = k                         #starts at the box with their number on it
+  times = 1
+  while (k != ncard[i]) {
+    #he can find his card at the end of the loop
+    i = ncard[i]
+    times = times + 1
   }
-  return(times)
+  win=times<=n           #win=0 if try more than n times,else win=1
+  return(win)
 }
+
+s2 = function(n,k,ncard) {
+  startr = sample(1:(2 * n), 1)         #starting from a randomly selected box
+  i = startr
+  times = 1
+  while (k != ncard[i] & times <= n) { #he may never find his card if he isn't in the right loop
+    i = ncard[i]
+    times = times + 1
+  }
+  win=times<=n             #win=0 if try more than n times,else win=1
+  return(win)
+}
+
+s3=function(n,k,...){          #just have the same form
+  rand = sample(1:(2 * n), n)  #card number he get first n times
+  win = k %in% rand                #if he get his card,win=1;if not,win=0
+  return(win)
+}
+
+# fcard = function(n, k, strategy, ncard) {
+#   if (strategy == 1) {
+#     i = k                         #starts at the box with their number on it
+#     times = 1
+#     while (k != ncard[i]) {
+#       #he can find his card at the end of the loop
+#       i = ncard[i]
+#       times = times + 1
+#     }
+#   } else if (strategy == 2) {
+#     startr = sample(1:(2 * n), 1)         #starting from a randomly selected box
+#     i = startr
+#     times = 1
+#     #loop = 0
+#     while (k != ncard[i] & times <= n) {
+#       #loop = (startr == ncard[i]) #loop=1 when a loop occurs and k is not in the loop
+#       i = ncard[i]
+#       times = times + 1
+#     }
+#   } else{
+#     rand = sample(1:(2 * n), n)     #card number he get first n times
+#     times = (!(k %in% rand)) * (n + 1)     #if he get his card,times=0;if not,times=n+1
+#   }
+#   return(times)
+# }
 
 #function Pone estimates the probability of a single prisoner succeeding in finding their number
 #arguments: n        2*n is the number of prisoners;
@@ -51,36 +73,54 @@ fcard = function(n, k, strategy, ncard) {
 #           nreps    is the number of replicate simulations;
 #return:    probability estimate
 Pone = function(n, k, strategy, nreps = 10000) {
+  if(strategy == 1){             #choose strategy
+    stra=s1
+  }else if(strategy == 2){
+    stra=s2
+  }else{
+    stra=s3
+  }
   wint = 0   #times of success
   for (i in 1:nreps) {
-    ncard = sample(1:(2 * n), 2 * n)
-    wint = wint + (fcard(n, k, strategy, ncard)<=n)
+    ncard = sample(1:(2 * n), 2 * n) #index of card in corresponding box
+    wint = wint + stra(n, k, ncard)  #times of win
   }
   P = wint / nreps
   return(P)
 }
 
-#m means prisoner can try m times (for probability distribution)
-gall=function(n, strategy){    #game for all
+
+
+game = function(n, strategy) {   #play the whole game once
+  if(strategy == 1){             #choose strategy
+    stra=s1
+  }else if(strategy == 2){
+    stra=s2
+  }else{
+    stra=s3
+  }
   ncard = sample(1:(2 * n), 2 * n)   #ncard[i] is card number in ith box
-  pid = array(1:(2*n),c(2*n))        #prisoner id
-  winn=sapply(pid, fcard,n=n,strategy=strategy,ncard=ncard)  #times of every prisoner try until they get card
-  winL=(winn<=n)                     #FALSE if times of prisoner i try is bigger than n
-  win=all(winL)                      #win=1 means they win once
-  return(win)
+  win = 1
+  for (i in 1:(2 * n)) {          #every prisoner try
+    if (stra(n, i,ncard) == 0) { #if one fail, then game over
+      win = 0
+      break
+    }
+  }
+  return(win)                #all success, win=1, else win=0
 }
-Pall = function(n, strategy, nerps = 10000){
-  gresult=sapply(rep(n,nerps), gall,strategy=strategy)
-  sn=sum(gresult)               ##number of wins
-  p=round(sn / nerps,5)         #probability of game
+
+Pall = function(n, strategy,nreps = 10000) {
+  gresult=replicate(nreps,game(n=n,strategy = strategy))  #result of 10000 games
+  sn=sum(gresult)               #number of wins
+  p=round(sn / nreps,6)         #probability of game
+  
 }
-#-------------------------------
+
+#---------------------------------------------------
 
 #print(system.time(Pall(50,2)))
-Pone5=sapply(c(1:3), Pone,n=5,k=1)
-Pone50=sapply(c(1:3), Pone,n=50,k=1)
-Pall5=sapply(c(1:3), Pall,n=5)
-Pall50=sapply(c(1:3),Pall,n=50)
+
 #------------------------------------------------------
 #dloop
 
@@ -91,8 +131,6 @@ rloop = function(T,n) {#T
 }
 
 leni = function(n) {
-  #ncard = sample(1:(2 * n), 2 * n)
-  #T = matrix(0, 2 * n+1, 2 * n)
   T = c(1:(2 * n))              #n boxes
   T = rbind(T,sample(1:(2 * n), 2 * n))  #card number in boxes
   while (nrow(T)<=(2*n)) {
@@ -105,12 +143,23 @@ leni = function(n) {
   return(lenlist)
 }
 
-dloop=function(n,nerps=10000){
-  c=rep(n,nerps)
-  lenm=sapply(c, leni)  #10000columns, each columns is a lenlist
-  p=round(rowSums(lenm)/nerps,7)   
+dloop=function(n,nreps=10000){
+  #c=rep(n,nreps)
+  #lenm=sapply(c, leni)  
+  lenm=replicate(nreps,leni(n)) #10000columns, each columns is a lenlist
+  p=round(rowSums(lenm)/nreps,6)   
   return(p)
 }
 
-a=system.time(dloop(50))
+a=system.time({Pone5=sapply(c(1:3), Pone,n=5,k=1)
+Pone50=sapply(c(1:3), Pone,n=50,k=1)
+Pall5=sapply(c(1:3), Pall,n=5)
+Pall50=sapply(c(1:3),Pall,n=50)
+ploop=dloop(50)
+barplot(ploop,space=0)})
 print(a)
+#print(Pone(5,5,3))
+# a=system.time({Pall2=Pall(50,2)})
+# print(a)
+#ploop=dloop(10,50000)
+
