@@ -89,8 +89,6 @@ Pone = function(n, k, strategy, nreps = 10000) {
   return(P)
 }
 
-
-
 game = function(n, strategy) {   #play the whole game once
   if(strategy == 1){             #choose strategy
     stra=s1
@@ -150,6 +148,9 @@ dloop=function(n,nreps=10000){
   p=round(rowSums(lenm)/nreps,6)   
   return(p)
 }
+
+#plot the probabilities of each loop length
+plot(dloop(50), ylim = range(0:1), xlab = "length", ylab = "probablity", main = paste("The probability of each loop length occurs at least once"), cex = 0.8, type = "p")
 
 a=system.time({Pone5=sapply(c(1:3), Pone,n=5,k=1)
 Pone50=sapply(c(1:3), Pone,n=50,k=1)
