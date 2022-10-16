@@ -5,15 +5,14 @@
 rm(list = ls())
 #Overview
 #We constructed functions for individual prisoners to complete the game under three strategies,
-#and estimated single(pone) and overall(pall) success probabilities by apply functions and for loops, 
+#and estimated single(Pone) and overall(Pall) success probabilities by apply functions and for loops, 
 #and we obtained the length of loops appearing in one game by constructing the matrix T where row i is the i-th card of the prisoner, 
 #and estimated the probability by repeating the game through the dloop function.
 
 #Remark: methods to reduce the running time
 #1.Using the properties of probability, e.g, the magnitude of the probability of test failure increases as the number of test prisoners increases in a single simulation. 
 #  Thus, we end the game after one person fails.
-#2.For loops, we use the method of adding the first 2*(i-1) rows at a time to row i, which represents all the loop information before row i, 
-#  in order to simulate the game more efficiently.
+#2.For T, we use the method of adding the 2^(i-1) rows on the ith time, in order to simulate the game more efficiently.
 
 #function s1, s2, s3 find whether prisoner finds his card within n times by strategy1, 2, 3
 #arguments: n        2*n is the number of prisoners;
@@ -93,7 +92,7 @@ game = function(n, strategy) {   #play the whole game once
   return(win)         #all success, win=1, else win=0
 }
 
-#function pall estimates the probability of success of the complete game under the three strategies
+#function Pall estimates the probability of success of the complete game under the three strategies
 #arguments: n, nreps, strategy       have been shown above;
 #return:    probability estimate
 Pall = function(n, strategy, nreps = 10000) {
@@ -112,11 +111,11 @@ Pall = function(n, strategy, nreps = 10000) {
 #function rloop constructs the matrix T
 #arguments: n        have been shown above;
 #           T        matrix T,row i represents the card number that each prisioner gets form the (i-1)st time
-#return:    next 2^(i-1) row(s) on the ith time of the loop
+#return:    nrow(T)-1
 rloop = function(T,n) {#T
   len=nrow(T)       #the length of column in T
   nr=sapply(c(1:(2*n)),function(i,T) T[2:len,T[len,i]],T=T) #next card number
-  return(nr)        #return next 2^(i-1) row(s)
+  return(nr)        #return nrow(T)-1
 }
 
 #function leni obtains the length of the loops in a single game by matirx T
