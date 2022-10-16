@@ -4,12 +4,11 @@
 
 rm(list = ls())
 
-
-#find whether prisoner finds his card and times he tries no matter whether he finds with strategy1
+#find whether prisoner finds his card within n times by strategy1
 #arguments: n        2*n is the number of prisoners;
-#           k        is the ID of the prisoner;
-#return:    whether he finds his card,times he tries
-
+#           k        ID of the prisoner;
+#           ncard    #a vector of card number in sorted boxes
+#return:    if he finds his card,return 1, else return 0
 s1 = function(n, k,ncard) {
   i = k                         #starts at the box with their number on it
   times = 1
@@ -22,6 +21,7 @@ s1 = function(n, k,ncard) {
   return(win)
 }
 
+#find whether prisoner finds his card within n times by strategy 2
 s2 = function(n,k,ncard) {
   startr = sample(1:(2 * n), 1)         #starting from a randomly selected box
   i = startr
@@ -89,6 +89,7 @@ Pone = function(n, k, strategy, nreps = 10000) {
   return(P)
 }
 
+
 game = function(n, strategy) {   #play the whole game once
   if(strategy == 1){             #choose strategy
     stra=s1
@@ -107,6 +108,7 @@ game = function(n, strategy) {   #play the whole game once
   }
   return(win)                #all success, win=1, else win=0
 }
+
 
 Pall = function(n, strategy,nreps = 10000) {
   gresult=replicate(nreps,game(n=n,strategy = strategy))  #result of 10000 games
@@ -149,7 +151,14 @@ dloop=function(n,nreps=10000){
   return(p)
 }
 
+#print results:
+#poneout is the probabilities of the individual succeeding in finding their number
+#pallout is the probabilities of the joint succeess
+#dloop50 estimates the probability that the loop length is less than 50 occurring at least once
 #plot the probabilities of each loop length
+Poneout <- data.frame("strategy" = c(1,2,3), "pone5" = sapply(c(1:3), Pone,n=5,k=1), "pone50" = sapply(c(1:3), Pone,n=50,k=1), row.names = NULL)
+pallout <- data.frame("pall5" = sapply(c(1:3), Pall,n=5), "pone50" =sapply(c(1:3),Pall,n=50))
+dloop50 <- 1- sum(dloop(50)[51:100])
 plot(dloop(50), ylim = range(0:1), xlab = "length", ylab = "probablity", main = paste("The probability of each loop length occurs at least once"), cex = 0.8, type = "p")
 
 a=system.time({Pone5=sapply(c(1:3), Pone,n=5,k=1)
@@ -158,9 +167,7 @@ Pall5=sapply(c(1:3), Pall,n=5)
 Pall50=sapply(c(1:3),Pall,n=50)
 ploop=dloop(50)
 barplot(ploop,space=0)})
-print(a)
 #print(Pone(5,5,3))
 # a=system.time({Pall2=Pall(50,2)})
 # print(a)
 #ploop=dloop(10,50000)
-
