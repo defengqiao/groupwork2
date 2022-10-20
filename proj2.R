@@ -1,5 +1,5 @@
 #Defeng Qiao, s2419769; Tianai Ren, s2329207; YiZhou Chen, s2450877
-#https://github.com/defengqiao/groupwork2.git
+#github：https://github.com/defengqiao/groupwork2.git
 #Contributions:Defeng Qiao: 36% function s1s2s3 Pone, part of dloop, code refactoring for efficiency
 #              Tianai Ren:  34% function dloop, overview, comments, output
 #              YiZhou Chen: 30% function Pall, answer Question4 
@@ -125,11 +125,7 @@ Pall = function(n, strategy, nreps = 10000) {
   p=round(sn / nreps,6)                                   #probability of game
 }
 
-#---------------------------------------------------
 
-#print(system.time(Pall(50,2)))
-
-#------------------------------------------------------
 #dloop
 
 #function rloop constructs the matrix T
