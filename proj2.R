@@ -2,7 +2,7 @@
 #https://github.com/defengqiao/groupwork2.git
 #Contributions:Defeng Qiao: 36% function s1s2s3 Pone, part of dloop, code refactoring for efficiency
 #              Tianai Ren:  34% function dloop, overview, comments, output
-#              YiZhou Chen: 30% function Pall
+#              YiZhou Chen: 30% function Pall, answer Question4 
 
 rm(list = ls())
 #Overview
@@ -15,6 +15,26 @@ rm(list = ls())
 #1.Using the properties of probability, e.g, the magnitude of the probability of test failure increases as the number of test prisoners increases in a single simulation. 
 #  Thus, we end the game after one person fails.
 #2.For T, we use the method of adding the 2^(i-1) rows on the ith time, in order to simulate the game more efficiently.
+
+
+
+#ANS for Question_4
+#The surprising part is by using strategy_1, the probability of all prisoners winning this game would slowly decrease 
+#and finally approach to 0.3 when n goes to infinity which is run counter to people’s convention that the probability will 
+#approach to 0 when the number of participants becomes larger and larger. Under this circumstance, the probabilities of 
+#each game are no longer independent. Hence, when we are considering the chance that all people win in this game, instead 
+#of multiplying the probability of prisoner win in his period, we should more consider the probability the case with number of loops <= n. 
+
+#As for strategy_3, in this case, everyone has the probability of winning his game, so the probability of all prisoners 
+#winning this game is equal to the multiplication of the probabilities that loops<=n in this period occurs, and the 
+#probability of anyone in the game winning on his period will decrease from 0.5 and finally approach to 0 with n increase to infinity. 
+
+#Different from strategy_1, strategy_2 use randomly box selection to replace the first step of strategy_1, thus, it is like 
+#strategy_1, and the first step of strategy_3 is the same as the first step of strategy_2. In addition to that, the probability 
+#that the outcome of the first step can lead the prisoner win on this game could be denoted as P2. However, if the random selection 
+#is applied in the first step, the game might no longer be followed by the win loop, therefore, when n goes to infinity, P2 will 
+#lead the probability of winning this game will exponentially decrease and approach to 0 as n goes from 1 to infinity. 
+
 
 
 #function s1, s2, s3 find whether prisoner finds his card within n times by strategy1, 2, 3
