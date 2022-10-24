@@ -132,36 +132,67 @@ Pall = function(n, strategy, nreps = 10000) {
 #arguments: n        have been shown above;
 #           T        matrix T,row i represents the card number that each prisioner gets form the (i-1)st time
 #return:    nrow(T)-1
-rloop = function(T,n) { #T
-  len=nrow(T)           #the length of column in T
-  nr=sapply(c(1:(2*n)),function(i,T) T[2:len,T[len,i]],T=T) #next card number
-  return(nr)            #return nrow(T)-1
+# rloop = function(T,n) { #T
+#   len=nrow(T)           #the length of column in T
+#   nr=sapply(c(1:(2*n)),function(i,T) T[2:len,T[len,i]],T=T) #next card number
+#   return(nr)            #return nrow(T)-1
+# }
+# 
+# #function leni obtains the length of the loops in a single game by matirx T
+# #arguments: n        have been shown above;
+# #return:    the length of the loops
+# leni = function(n) {
+#   T = c(1:(2 * n))                       #n boxes
+#   T = rbind(T,sample(1:(2 * n), 2 * n))  #card number in boxes
+#   while (nrow(T)<=(2*n)) {
+#     T=rbind(T,rloop(T,n))
+#   }
+#   
+#   len=apply(T,2,function(Ti) match(Ti[1],Ti[2:(2*n+1)]))  #loop length
+#   lenlist=rep(0,2*n)
+#   lenlist[len]=1                                          #if length i occurring once, lenlist[i]=1
+#   return(lenlist)
+# }
+# 
+# #function dloop estimates the probability that the loop length from 1 to 2*n occurring at least once
+# #arguments: n,reps       have been shown above;
+# #return:    probability estimate
+# dloop=function(n,nreps=10000){
+#   #c=rep(n,nreps)
+#   #lenm=sapply(c, leni)  
+#   lenm=replicate(nreps,leni(n))   #10000 columns, each columns is a lenlist
+#   p=round(rowSums(lenm)/nreps,6)   
+#   return(p)
+# }
+loop = function(n) {
+  n = 50
+  ncard = sample(1:(2 * n), 2 * n)
+  nbox = 1:(2 * n)
+  listl = c()
+  while (length(nbox) != 0) {
+    aloop = c(nbox[1])
+    lenl = 1
+    while (nbox[1] != ncard[aloop[lenl]]) {
+      card = aloop[lenl]
+      aloop = c(aloop, ncard[card])
+      lenl = lenl + 1
+    }
+    listl = c(listl, lenl)
+    iloop = match(aloop, nbox)
+    nbox = nbox[-iloop]
+  }
+  lenlist = rep(0, 2 * n)
+  lenlist[listl] = 1
+  return(lenlist)
 }
-
 #function leni obtains the length of the loops in a single game by matirx T
 #arguments: n        have been shown above;
 #return:    the length of the loops
-leni = function(n) {
-  T = c(1:(2 * n))                       #n boxes
-  T = rbind(T,sample(1:(2 * n), 2 * n))  #card number in boxes
-  while (nrow(T)<=(2*n)) {
-    T=rbind(T,rloop(T,n))
-  }
-  
-  len=apply(T,2,function(Ti) match(Ti[1],Ti[2:(2*n+1)]))  #loop length
-  lenlist=rep(0,2*n)
-  lenlist[len]=1                                          #if length i occurring once, lenlist[i]=1
-  return(lenlist)
-}
 
-#function dloop estimates the probability that the loop length from 1 to 2*n occurring at least once
-#arguments: n,reps       have been shown above;
-#return:    probability estimate
-dloop=function(n,nreps=10000){
-  #c=rep(n,nreps)
-  #lenm=sapply(c, leni)  
-  lenm=replicate(nreps,leni(n))   #10000 columns, each columns is a lenlist
-  p=round(rowSums(lenm)/nreps,6)   
+
+dloop = function(n, nreps = 10000) {
+  lenm = replicate(nreps, loop(n))   #10000 columns, each columns is a lenlist
+  p = round(rowSums(lenm) / nreps, 6)
   return(p)
 }
 
@@ -170,11 +201,12 @@ dloop=function(n,nreps=10000){
 #Pallout is the probabilities of the joint succeess
 #dloop50 estimates the probability that the loop length is less than 50 occurring at least once
 #plot the probabilities of each loop length
-Poneout = data.frame("strategy" = c(1,2,3), "Pone5" = sapply(c(1:3), Pone,n=5,k=1), "Pone50" = sapply(c(1:3), Pone,n=50,k=1))
+a=system.time({Poneout = data.frame("strategy" = c(1,2,3), "Pone5" = sapply(c(1:3), Pone,n=5,k=1), "Pone50" = sapply(c(1:3), Pone,n=50,k=1))
 Pallout = data.frame("strategy" = c(1,2,3), "Pall5" = sapply(c(1:3), Pall,n=5), "Pall50" =sapply(c(1:3),Pall,n=50))
 dloopp = dloop(50)
 dloop50 = 1- sum(dloopp[51:100])
 plot(dloopp, ylim = range(0:1), xlim = range(1:100), xlab = "length", ylab = "probablity", main = paste("The probability of each loop length occurs at least once"), cex = 0.8, type = "p")
 print(Poneout)
 print(Pallout)
-cat("P(length<=50):",dloop50)
+cat("P(length<=50):",dloop50)})
+print(a)
